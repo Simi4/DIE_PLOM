@@ -245,7 +245,6 @@ int main()
 
 	//СЕВЕРО-ЗАПАДНЫЙ УГОЛ---------------------------------
 
-	
 	double min_val;
 	int kol_X = 0;
 	for (int i = 0; i < K; ++i)
@@ -256,16 +255,21 @@ int main()
 				continue;
 
 			min_val = min(W[i], Q[j]);
+			SV += C[i][j] * min_val;
 			C[i][j] = min_val;
 			kol_X = kol_X + 1;
 			W[i] -= min_val;
 			Q[j] -= min_val;
-
+			
 			if (W[i] == 0)
 				break;
+
 		}
 	}
+
 	PRINT_MATRIX("Опорный план", C);
+	cout << "Целевая функция SV = " << SV << endl << endl;
+
 	cout << "Число базисных клеток = " << kol_X;
 
 	if (kol_X < (N + K - 1))
@@ -281,6 +285,9 @@ int main()
 			cout << ", что больше N + K - 1, значит план невырожденный.";
 	}
 	cout << endl << endl;
+
+
+	//УЛУЧШЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ ПОТЕНЦИАЛОВ---------------------------------
 
 
 	system("pause");
