@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <numeric>
+#include <string>
 
 
 using namespace std;
@@ -17,14 +18,15 @@ using namespace std;
 
 
 // кол-во многоканальных РЛС ( i = 1, ..., K )
-const int K = 3;
+const auto K = 3;
 
 // кол-во ГЦ ( j = 1, ..., N )
-const int N = 3;
+const auto NUM_GC = 3;
+auto N = NUM_GC;
 
 
 // Тип данных - массив N-элементов
-typedef array<double, N> array_j;
+typedef array<double, NUM_GC + 1> array_j;
 
 // Тип данных - массив K-элементов
 typedef array<double, K> array_i;
@@ -33,10 +35,20 @@ typedef array<double, K> array_i;
 typedef array<array_j, K> matrix_ij;
 
 // Макрос нахождения суммы в массиве
-#define SUM(X) accumulate(begin(X), end(X), 0.0)
+auto SUM(array_j X) { return accumulate(begin(X), begin(X) + N, 0.0); }
+auto SUM(array_i X) { return accumulate(begin(X), begin(X) + K, 0.0); }
 
 // Макрос вывода массива
-#define PRINT_ARRAY(str, X) { cout << str; for (auto it : X) cout << it << "  "; cout << endl; }
+template<typename T>
+void PRINT_ARRAY_EX(string str, T X, int cnt) {
+	cout << str;
+	for (auto it = begin(X); it != begin(X) + cnt; it++)
+		cout << *it << " ";
+	cout << endl;
+}
+void PRINT_ARRAY(string str, array_j X) { PRINT_ARRAY_EX(str, X, N); }
+void PRINT_ARRAY(string str, array_i X) { PRINT_ARRAY_EX(str, X, K); }
+
 
 // Макрос вывода матрицы
 #define PRINT_MATRIX(str, X) { \
@@ -176,9 +188,14 @@ int main()
 
 //---------------------------------------------------------------------------------------! ! ! ----
 //	if (sumW > sumQ)
+// добавления столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
 //---------------------------------------------------------------------------------------! ! ! ----
-// встатить действие добавления столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
-//---------------------------------------------------------------------------------------! ! ! ----
+
+	if (sumW > sumQ) {
+		N = N + 1;
+		Q[N-1] = sumW - sumQ;
+	}
+
 
 	PRINT_MATRIX( "C[K][N]:", C );
 
@@ -229,7 +246,7 @@ int main()
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			if (Q[i] == 0)
+			if (Q[j] == 0)
 				continue;
 
 			min_val = min(W[i], Q[j]);
