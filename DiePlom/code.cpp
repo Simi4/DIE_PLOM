@@ -51,13 +51,14 @@ void PRINT_ARRAY(string str, array_i X) { PRINT_ARRAY_EX(str, X, K); }
 
 
 // Макрос вывода матрицы
-#define PRINT_MATRIX(str, X) { \
-	cout << str << endl; \
-	for (auto row : X) { \
-		for (auto it : row) \
-			cout << it << "\t"; \
-		cout << endl; \
-	} cout << endl; }
+void PRINT_MATRIX(string str, matrix_ij X) {
+	cout << str << endl;
+	for (auto row : X) {
+		for (auto it = begin(row); it != begin(row) + N; it++)
+			cout << *it << "\t";
+		cout << endl;
+	} cout << endl;
+}
 
 
 // важность j-ой ГЦ ( 0 <= Vj <= 100 )
@@ -148,13 +149,10 @@ int main()
 	{
 		cout << "Проверьте баланс! Располагаемая сумма должна быть больше потребной!" << endl;
 	}
-
 	else if (sumW > sumQ)
 	{
 		cout << "sumW > sumQ ( " << sumW << " > " << sumQ << " ), значит вводим фиктивную переменную Q[" << N + 1 << "]" << endl << endl;
 	}
-
-	cout << endl;
 
 	//важность j-ой ГЦ (0<=Vj<=100)
 	for (int j = 0; j < N; j++)
@@ -186,12 +184,12 @@ int main()
 			C[i][j] = (V[j] / Q[j]) * p[i][j];
 		}
 	}
-	
+
 
 
 	//---------------------------------------------------------------------------------------! ! ! ----
 	//	if (sumW > sumQ)
-	// добавлени столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
+	// добавления столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
 	//---------------------------------------------------------------------------------------! ! ! ----
 
 	if (sumW > sumQ) {
@@ -199,13 +197,11 @@ int main()
 		Q[N - 1] = sumW - sumQ;
 	}
 
+
 	PRINT_MATRIX("C[K][N]:", C);
-	PRINT_ARRAY("", Q);
 
-	cout << endl;
-
-	//радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
-	//cout << "q[N]: ";
+	////радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
+	//cout << ". q[N]: ";
 	//for (int i = 0; i < K; i++)
 	//{
 	//	for (int j = 0; j < N; j++)
@@ -247,7 +243,7 @@ int main()
 	//СЕВЕРО-ЗАПАДНЫЙ УГОЛ---------------------------------
 
 	double min_val;
-	for (int i = 0; i < N; ++i)
+	for (int i = 0; i < K; ++i)
 	{
 		for (int j = 0; j < N; ++j)
 		{
