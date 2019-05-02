@@ -199,6 +199,9 @@ int main()
 
 
 	PRINT_MATRIX("C[K][N]:", C);
+	PRINT_ARRAY("", Q);
+
+	cout << endl;
 
 	////радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
 	//cout << ". q[N]: ";
