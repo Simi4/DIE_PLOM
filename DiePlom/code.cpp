@@ -10,20 +10,23 @@
 #include <algorithm>
 #include <array>
 #include <numeric>
+#include <string>
 
 
 using namespace std;
 
 
+
 // кол-во многоканальных РЛС ( i = 1, ..., K )
-const int K = 3;
+const auto K = 3;
 
 // кол-во ГЦ ( j = 1, ..., N )
-const int N = 3;
+const auto NUM_GC = 3;
+auto N = NUM_GC;
 
 
 // Тип данных - массив N-элементов
-typedef array<double, N> array_j;
+typedef array<double, NUM_GC + 1> array_j;
 
 // Тип данных - массив K-элементов
 typedef array<double, K> array_i;
@@ -32,10 +35,20 @@ typedef array<double, K> array_i;
 typedef array<array_j, K> matrix_ij;
 
 // Макрос нахождения суммы в массиве
-#define SUM(X) accumulate(begin(X), end(X), 0.0)
+auto SUM(array_j X) { return accumulate(begin(X), begin(X) + N, 0.0); }
+auto SUM(array_i X) { return accumulate(begin(X), begin(X) + K, 0.0); }
 
 // Макрос вывода массива
-#define PRINT_ARRAY(str, X) { cout << str; for (auto it : X) cout << it << "  "; cout << endl; }
+template<typename T>
+void PRINT_ARRAY_EX(string str, T X, int cnt) {
+	cout << str;
+	for (auto it = begin(X); it != begin(X) + cnt; it++)
+		cout << *it << " ";
+	cout << endl;
+}
+void PRINT_ARRAY(string str, array_j X) { PRINT_ARRAY_EX(str, X, N); }
+void PRINT_ARRAY(string str, array_i X) { PRINT_ARRAY_EX(str, X, K); }
+
 
 // Макрос вывода матрицы
 #define PRINT_MATRIX(str, X) { \
@@ -104,7 +117,7 @@ int main()
 	cout << "Количество РЛС: " << K << endl << endl;
 
 	// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ (0<=Wi<=5000)
-	
+
 	for (int i = 0; i < K; i++)
 	{
 		W[i] = rand() % 5000;
@@ -112,13 +125,13 @@ int main()
 
 	// вывод W
 	PRINT_ARRAY("W[K]: ", W);
-	
+
 	double sumW = SUM(W);
 	cout << "Располагаемая сумма: " << sumW << endl << endl;
 
 
 	//потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ (0<=Qj<=1000)
-	
+
 	for (int j = 0; j < N; j++)
 	{
 		Q[j] = rand() % 1000;
@@ -135,17 +148,20 @@ int main()
 	{
 		cout << "Проверьте баланс! Располагаемая сумма должна быть больше потребной!" << endl;
 	}
+
 	else if (sumW > sumQ)
 	{
 		cout << "sumW > sumQ ( " << sumW << " > " << sumQ << " ), значит вводим фиктивную переменную Q[" << N + 1 << "]" << endl << endl;
 	}
+
+	cout << endl;
 
 	//важность j-ой ГЦ (0<=Vj<=100)
 	for (int j = 0; j < N; j++)
 	{
 		V[j] = rand() % 100;
 	}
-	
+
 	// PRINT_ARRAY( "V[N]: ", V );
 
 
@@ -170,52 +186,26 @@ int main()
 			C[i][j] = (V[j] / Q[j]) * p[i][j];
 		}
 	}
+	
 
 
+	//---------------------------------------------------------------------------------------! ! ! ----
+	//	if (sumW > sumQ)
+	// добавлени столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
+	//---------------------------------------------------------------------------------------! ! ! ----
 
-//---------------------------------------------------------------------------------------! ! ! ----
-//	if (sumW > sumQ)
-//---------------------------------------------------------------------------------------! ! ! ----
-// встатить действие добавления столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
-//---------------------------------------------------------------------------------------! ! ! ----
-	if (sumW > sumQ)
-	{
-		int Kk = K;
-		int Nn = N;
-		// Выполняем цикл для каждой строки i e [0..row-1] матрицы matrix 
-		for (int i = 0; i < Kk; i++)
-		{
-			// Выделяем временный буфер temp под текущую строку i размером cols + 1 элементов
-			// Для вставки столбца необходимо чтобы каждая строка i имела размер cols + 1 на 
-			// один элемент больше исходной строки matrix[i]
-			int* temp = new int[Nn + 1];
-			// Копируем каждый элемент j строки i матрицы во временный буфер temp
-			for (int j = 0; j < Nn; j++)
-				temp[j] = C[i][j];
-
-			int index =0;
-
-			// Выполняем сдвиг всех элементов с индексами от cols до index 
-			// временного буфера temp на один элемент вправо
-			for (int k = Nn; k >= index; k--)
-				temp[k + 1] = temp[k];
-
-			// Элементу временного буфера с индексом index присваиваем случайное число
-			temp[index] = 0;
-
-			//if (temp != NULL)
-			//{
-			//	// Присваиваем значение указателя temp указателю i в массиве указателей matrix
-			//	C[i] = temp;
-			//}
-		}
-		Nn++; // Увеличиваем значение переменной количество столбцов cols на 1
+	if (sumW > sumQ) {
+		N = N + 1;
+		Q[N - 1] = sumW - sumQ;
 	}
 
-	PRINT_MATRIX( "C[K][N]:", C );
+	PRINT_MATRIX("C[K][N]:", C);
+	PRINT_ARRAY("", Q);
 
-	////радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
-	//cout << ". q[N]: ";
+	cout << endl;
+
+	//радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
+	//cout << "q[N]: ";
 	//for (int i = 0; i < K; i++)
 	//{
 	//	for (int j = 0; j < N; j++)
@@ -243,7 +233,7 @@ int main()
 	// обеспечиваемая при обслуживании j-ой ГЦ важность
 	for (int j = 0; j < N; j++)
 	{
-		v[j] = V[j]*(q[j] / Q[j]);
+		v[j] = V[j] * (q[j] / Q[j]);
 	}
 
 	double sumV = SUM(V);
@@ -261,7 +251,7 @@ int main()
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			if (Q[i] == 0)
+			if (Q[j] == 0)
 				continue;
 
 			min_val = min(W[i], Q[j]);
@@ -275,12 +265,8 @@ int main()
 	}
 
 
-	PRINT_MATRIX( "Опорный план", C );
-	
+	PRINT_MATRIX("Опорный план", C);
+
 	system("pause");
 	return 0;
 }
-
-
-
-
