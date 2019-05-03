@@ -1,20 +1,19 @@
 #include <windows.h>
-#include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <limits>
-#include <cstdio>
-#include <ctime>
 #include <random>
 #include <cmath>
 #include <algorithm>
 #include <array>
 #include <numeric>
-#include <string>
 
 
 using namespace std;
 
+// для проверки алгоритма
+// #define CHECK_ALG
 
 
 // кол-во многоканальных РЛС ( i = 1, ..., K )
@@ -34,30 +33,39 @@ typedef array<double, K> array_i;
 // Тип данных - матрица (K строк, N столбцов)
 typedef array<array_j, K> matrix_ij;
 
-// Макрос нахождения суммы в массиве
+// Функция нахождения суммы в массиве
 auto SUM(array_j X) { return accumulate(begin(X), begin(X) + N, 0.0); }
 auto SUM(array_i X) { return accumulate(begin(X), begin(X) + K, 0.0); }
 
-// Макрос вывода массива
-template<typename T>
-void PRINT_ARRAY_EX(string str, T X, int cnt) {
-	cout << str;
-	for (auto it = begin(X); it != begin(X) + cnt; it++)
-		cout << *it << " ";
-	cout << endl;
+
+// Функция вывода массива array_j
+ostream& operator<< (ostream& os, array_j val)
+{
+	for (auto it = begin(val); it != begin(val) + N; it++)
+	{
+		os << setw(10) << *it << " ";
+	}
+	return os;
 }
-void PRINT_ARRAY(string str, array_j X) { PRINT_ARRAY_EX(str, X, N); }
-void PRINT_ARRAY(string str, array_i X) { PRINT_ARRAY_EX(str, X, K); }
 
+// Функция вывода массива array_i
+ostream& operator<< (ostream& os, array_i val)
+{
+	for (auto it = begin(val); it != begin(val) + K; it++)
+	{
+		os << setw(10) << *it << " ";
+	}
+	return os;
+}
 
-// Макрос вывода матрицы
-void PRINT_MATRIX(string str, matrix_ij X) {
-	cout << str << endl;
-	for (auto row : X) {
-		for (auto it = begin(row); it != begin(row) + N; it++)
-			cout << *it << "\t";
-		cout << endl;
-	} cout << endl;
+// Функция вывода матрицы
+ostream& operator<< (ostream& os, matrix_ij val)
+{
+	for (auto row : val)
+	{
+		os << row << endl;
+	}
+	return os;
 }
 
 
@@ -68,13 +76,54 @@ array_j V;
 // потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ ( 0 <= Qj <= 1000 )
 array_j Q;
 
+void fill_Q()
+{
+#ifndef CHECK_ALG
+	for (int j = 0; j < N; j++)
+	{
+		Q[j] = rand() % 1000;
+	}
+#else
+	Q = { 300, 200, 100 };
+#endif
+}
+
 
 // располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ ( 0 <= Wi <= 5000 )
 array_i W;
 
+void fill_W()
+{
+#ifndef CHECK_ALG
+	for (int i = 0; i < K; i++)
+	{
+		W[i] = rand() % 5000;
+	}
+#else
+	W = { 100, 200, 300 };
+#endif
+}
+
 
 // потенциал i-ой РЛС, выделяемый на j-ую ГЦ ( 0 <= wij <= 1000 )
 matrix_ij w;
+
+void fill_w()
+{
+#ifndef CHECK_ALG
+	for (int i = 0; i < K; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			w[i][j] = rand() % 1000;
+		}
+	}
+#else
+	w[0] = { 100, 200, 300 };
+	w[1] = { 200, 300, 400 };
+	w[2] = { 300, 400, 500 };
+#endif
+}
 
 
 // радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
@@ -84,6 +133,17 @@ array_j q;
 // обеспечиваемая при обслуживании j-ой ГЦ важность
 array_j v;
 
+void fill_V()
+{
+#ifndef CHECK_ALG
+	for (int j = 0; j < N; j++)
+	{
+		V[j] = rand() % 100;
+	}
+#else
+	V = { 20, 30, 40 };
+#endif
+}
 
 // важность, обеспечиваемая при обслуживании всех ГЦ
 double SV;
@@ -91,6 +151,26 @@ double SV;
 // вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ ( 0 <= pij <= 1 )
 matrix_ij p;
 
+void fill_p()
+{
+#ifndef CHECK_ALG
+	// Генератор случайных чисел
+	default_random_engine generator((unsigned)time(nullptr));
+	uniform_real_distribution<double> distribution(0.0, 1.0);
+
+	for (int i = 0; i < K; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			p[i][j] = distribution(generator);
+		}
+	}
+#else
+	p[0] = { 0.5, 0.2, 0.3 };
+	p[1] = { 0.1, 0.8, 0.4 };
+	p[2] = { 0.1, 0.3, 0.7 };
+#endif
+}
 
 // важность, не обеспечиваемая при обслуживании всех ГЦ
 double sV;
@@ -100,10 +180,10 @@ double sV;
 matrix_ij C;
 
 
+
+
 int main()
 {
-	// Генератор случайных чисел
-	default_random_engine generator((unsigned)time(nullptr));
 	srand((unsigned)time(nullptr));
 
 	// Кодировка консоли
@@ -111,35 +191,24 @@ int main()
 	SetConsoleOutputCP(CP_UTF8);
 
 	// Задаем точность до сотых
-	cout << fixed;
+	cout << fixed << left;
 	cout.precision(3);
 
 	cout << "Количество ГЦ  (N): " << N << endl;
 	cout << "Количество РЛС (K): " << K << endl << endl;
 
 	// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ (0<=Wi<=5000)
+	fill_W();
+	cout << "W[K]: " << W << endl;
 
-	for (int i = 0; i < K; i++)
-	{
-		W[i] = rand() % 5000;
-	}
-
-	// вывод W
-	PRINT_ARRAY("W[K]: ", W);
 
 	double sumW = SUM(W);
 	cout << "Располагаемая сумма: " << sumW << endl << endl;
 
 
-	//потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ (0<=Qj<=1000)
-
-	for (int j = 0; j < N; j++)
-	{
-		Q[j] = rand() % 1000;
-	}
-
-	// вывод Q
-	PRINT_ARRAY("Q[N]: ", Q);
+	// потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ (0<=Qj<=1000)
+	fill_Q();
+	cout << "Q[N]: " << Q << endl;
 
 	double sumQ = SUM(Q);
 	cout << "Потребная сумма: " << sumQ << endl << endl;
@@ -154,29 +223,17 @@ int main()
 		cout << "sumW > sumQ ( " << sumW << " > " << sumQ << " ), значит вводим фиктивную переменную Q[" << N + 1 << "]" << endl << endl;
 	}
 
-	//важность j-ой ГЦ (0<=Vj<=100)
-	for (int j = 0; j < N; j++)
-	{
-		V[j] = rand() % 100;
-	}
-
-	// PRINT_ARRAY( "V[N]: ", V );
+	// важность j-ой ГЦ ( 0 <= Vj <= 100 )
+	fill_V();
+	// cout << "V[N]: " << V << endl;
 
 
-	//вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ (0<=pij<=1)
-	uniform_real_distribution<double>distribution(0.0, 1.0);
-
-	for (int i = 0; i < K; i++)
-	{
-		for (int j = 0; j < N; j++)
-		{
-			p[i][j] = distribution(generator);
-		}
-	}
-	//PRINT_MATRIX( "p[K][N]:", p );
+	// вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ ( 0 <= pij <= 1 )
+	fill_p();
+	// cout << "p[K][N]:" << endl << p << endl;
 
 
-	//коэффициент для ЦФ (Сij= Vj/Qj*pij)
+	// коэффициент для ЦФ ( Сij = Vj/Qj*pij )
 	for (int i = 0; i < K; i++)
 	{
 		for (int j = 0; j < N; j++)
@@ -198,10 +255,8 @@ int main()
 	}
 
 
-	PRINT_MATRIX("C[K][N]:", C);
-	PRINT_ARRAY("", Q);
-
-	cout << endl;
+	cout << "C[K][N]:" << endl << C << endl;
+	cout << "Q[N]: " << Q << endl << endl;
 
 	////радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
 	//cout << ". q[N]: ";
@@ -219,14 +274,8 @@ int main()
 	//cout << endl;
 
 	//потенциал i-ой РЛС, выделяемый на j-ую ГЦ (0<=wij<=1000)
+	fill_w();
 
-	for (int i = 0; i < K; i++)
-	{
-		for (int j = 0; j < N; j++)
-		{
-			w[i][j] = rand() % 1000;
-		}
-	}
 	// PRINT_MATRIX("w[K][N]:", w);
 
 	// обеспечиваемая при обслуживании j-ой ГЦ важность
@@ -267,7 +316,7 @@ int main()
 		}
 	}
 
-	PRINT_MATRIX("Опорный план", C);
+	cout << "Опорный план" << endl << C << endl;
 	cout << "Целевая функция SV = " << SV << endl << endl;
 
 	cout << "Число базисных клеток = " << kol_X;
@@ -290,6 +339,6 @@ int main()
 	//УЛУЧШЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ ПОТЕНЦИАЛОВ---------------------------------
 
 
-	system("pause");
+	cin.get();
 	return 0;
 }
