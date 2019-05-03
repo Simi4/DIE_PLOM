@@ -17,6 +17,9 @@ using namespace std;
 // #define CHECK_ALG
 #define SEED (unsigned)time(nullptr)
 
+// Задаем точность до сотых
+constexpr auto PRECISION = 3;
+
 
 // кол-во многоканальных РЛС ( i = 1, ..., K )
 const auto K = 3;
@@ -219,15 +222,34 @@ void print_plan()
 		{
 			if (isnan(plan[i][j]))
 			{
-				cout << setw(8) << C[i][j] << setw(13) << " ";
+				cout << setw(13) << C[i][j];
 			}
 			else
 			{
-				cout << setw(6) << C[i][j] << "[" << setw(8) << plan[i][j] << setw(6) << "]";
+				cout << setw(6) << C[i][j] << "[" << setw(4) << setprecision(0) << plan[i][j] << setprecision(PRECISION) << "] ";
 			}
 		}
 		cout << endl;
 	}
+}
+
+
+// Функция вывода матрицы тарифов + запасы и потребности
+void print_full()
+{
+	cout << setprecision(PRECISION);
+	cout << setw(6 + N * 11) << "C[K][N]" << "W[K]" << endl;
+
+	for (int i = 0; i < K; i++)
+	{
+		cout << setw(6) << "";
+		for (int j = 0; j < N; j++)
+		{
+			cout << setw(10) << C[i][j] << " ";
+		}
+		cout << setprecision(0) << W[i] << setprecision(PRECISION) << endl;
+	}
+	cout << "Q[N]  " << setprecision(0) <<  Q << setprecision(PRECISION) << endl << endl;
 }
 
 
@@ -239,9 +261,7 @@ int main()
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
 
-	// Задаем точность до сотых
-	cout << fixed << left;
-	cout.precision(3);
+	cout << fixed << left << setprecision(PRECISION);
 
 	cout << "Количество ГЦ  (N): " << N << endl;
 	cout << "Количество РЛС (K): " << K << endl << endl;
@@ -305,8 +325,9 @@ int main()
 	}
 
 
-	cout << "C[K][N]:" << endl << C << endl;
-	cout << "Q[N]: " << Q << endl << endl;
+	// вывод матрицы тарифов + запасы и потребности
+	print_full();
+
 
 	////радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
 	//cout << ". q[N]: ";
@@ -370,7 +391,7 @@ int main()
 	}
 
 	cout << "Опорный план" << endl; print_plan();
-	cout << "Целевая функция SV = " << SV << endl << endl;
+	cout << "Целевая функция SV = " << setprecision(PRECISION) << SV << endl << endl;
 
 #ifdef CHECK_ALG
 	if (SV < 41.65 || SV > 41.67)
