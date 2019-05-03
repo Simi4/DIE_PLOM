@@ -8,12 +8,14 @@
 #include <algorithm>
 #include <array>
 #include <numeric>
+#include <cassert>
 
 
 using namespace std;
 
 // для проверки алгоритма
 // #define CHECK_ALG
+#define SEED (unsigned)time(nullptr)
 
 
 // кол-во многоканальных РЛС ( i = 1, ..., K )
@@ -34,12 +36,12 @@ typedef array<double, K> array_i;
 typedef array<array_j, K> matrix_ij;
 
 // Функция нахождения суммы в массиве
-auto SUM(array_j X) { return accumulate(begin(X), begin(X) + N, 0.0); }
-auto SUM(array_i X) { return accumulate(begin(X), begin(X) + K, 0.0); }
+auto SUM(const array_j& X) { return accumulate(begin(X), begin(X) + N, 0.0); }
+auto SUM(const array_i& X) { return accumulate(begin(X), begin(X) + K, 0.0); }
 
 
 // Функция вывода массива array_j
-ostream& operator<< (ostream& os, array_j val)
+ostream& operator<< (ostream& os, const array_j& val)
 {
 	for (auto it = begin(val); it != begin(val) + N; it++)
 	{
@@ -49,7 +51,7 @@ ostream& operator<< (ostream& os, array_j val)
 }
 
 // Функция вывода массива array_i
-ostream& operator<< (ostream& os, array_i val)
+ostream& operator<< (ostream& os, const array_i& val)
 {
 	for (auto it = begin(val); it != begin(val) + K; it++)
 	{
@@ -59,9 +61,9 @@ ostream& operator<< (ostream& os, array_i val)
 }
 
 // Функция вывода матрицы
-ostream& operator<< (ostream& os, matrix_ij val)
+ostream& operator<< (ostream& os, const matrix_ij& val)
 {
-	for (auto row : val)
+	for (const auto& row : val)
 	{
 		os << row << endl;
 	}
@@ -79,9 +81,13 @@ array_j Q;
 void fill_Q()
 {
 #ifndef CHECK_ALG
+	// Генератор случайных чисел
+	static default_random_engine gen(SEED);
+	static uniform_int_distribution<unsigned> dist(0, 1000);
+
 	for (int j = 0; j < N; j++)
 	{
-		Q[j] = rand() % 1000;
+		Q[j] = dist(gen);
 	}
 #else
 	Q = { 300, 200, 100 };
@@ -95,9 +101,13 @@ array_i W;
 void fill_W()
 {
 #ifndef CHECK_ALG
+	// Генератор случайных чисел
+	static default_random_engine gen(SEED);
+	static uniform_int_distribution<unsigned> dist(0, 5000);
+
 	for (int i = 0; i < K; i++)
 	{
-		W[i] = rand() % 5000;
+		W[i] = dist(gen);
 	}
 #else
 	W = { 100, 200, 300 };
@@ -111,11 +121,15 @@ matrix_ij w;
 void fill_w()
 {
 #ifndef CHECK_ALG
+	// Генератор случайных чисел
+	static default_random_engine gen(SEED);
+	static uniform_int_distribution<unsigned> dist(0, 1000);
+
 	for (int i = 0; i < K; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			w[i][j] = rand() % 1000;
+			w[i][j] = dist(gen);
 		}
 	}
 #else
@@ -136,9 +150,13 @@ array_j v;
 void fill_V()
 {
 #ifndef CHECK_ALG
+	// Генератор случайных чисел
+	static default_random_engine gen(SEED);
+	static uniform_int_distribution<unsigned> dist(0, 100);
+
 	for (int j = 0; j < N; j++)
 	{
-		V[j] = rand() % 100;
+		V[j] = dist(gen);
 	}
 #else
 	V = { 20, 30, 40 };
@@ -155,14 +173,14 @@ void fill_p()
 {
 #ifndef CHECK_ALG
 	// Генератор случайных чисел
-	default_random_engine generator((unsigned)time(nullptr));
-	uniform_real_distribution<double> distribution(0.0, 1.0);
+	default_random_engine gen(SEED);
+	uniform_real_distribution<double> dist(0.0, 1.0);
 
 	for (int i = 0; i < K; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			p[i][j] = distribution(generator);
+			p[i][j] = dist(gen);
 		}
 	}
 #else
@@ -180,11 +198,42 @@ double sV;
 matrix_ij C;
 
 
+// Опорный план
+matrix_ij plan;
+
+// Функция заполнения опорного плана "NaN"
+void fill_plan()
+{
+	for (auto& row : plan)
+	{
+		fill(begin(row), end(row), numeric_limits<double>::quiet_NaN());
+	}
+}
+
+// Функция вывода матрицы опорного плана
+void print_plan()
+{
+	for (int i = 0; i < K; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			if (isnan(plan[i][j]))
+			{
+				cout << setw(8) << C[i][j] << setw(13) << " ";
+			}
+			else
+			{
+				cout << setw(6) << C[i][j] << "[" << setw(8) << plan[i][j] << setw(6) << "]";
+			}
+		}
+		cout << endl;
+	}
+}
 
 
 int main()
 {
-	srand((unsigned)time(nullptr));
+	srand(SEED);
 
 	// Кодировка консоли
 	SetConsoleCP(CP_UTF8);
@@ -249,7 +298,8 @@ int main()
 	// добавления столбца из нулей (в конец), в массив Q[N] добавить Q[N+1]=sumW-sumQ
 	//---------------------------------------------------------------------------------------! ! ! ----
 
-	if (sumW > sumQ) {
+	if (sumW > sumQ)
+	{
 		N = N + 1;
 		Q[N - 1] = sumW - sumQ;
 	}
@@ -273,10 +323,9 @@ int main()
 	//}
 	//cout << endl;
 
-	//потенциал i-ой РЛС, выделяемый на j-ую ГЦ (0<=wij<=1000)
+	// потенциал i-ой РЛС, выделяемый на j-ую ГЦ (0<=wij<=1000)
 	fill_w();
-
-	// PRINT_MATRIX("w[K][N]:", w);
+	// cout << "w[K][N]:" << endl << w;
 
 	// обеспечиваемая при обслуживании j-ой ГЦ важность
 	for (int j = 0; j < N; j++)
@@ -294,6 +343,11 @@ int main()
 
 	//СЕВЕРО-ЗАПАДНЫЙ УГОЛ---------------------------------
 
+
+	// Опорный план - заполнение "NaN"
+	fill_plan();
+
+
 	double min_val;
 	int kol_X = 0;
 	for (int i = 0; i < K; ++i)
@@ -305,19 +359,25 @@ int main()
 
 			min_val = min(W[i], Q[j]);
 			SV += C[i][j] * min_val;
-			C[i][j] = min_val;
+			plan[i][j] = min_val;
 			kol_X = kol_X + 1;
 			W[i] -= min_val;
 			Q[j] -= min_val;
 			
 			if (W[i] == 0)
 				break;
-
 		}
 	}
 
-	cout << "Опорный план" << endl << C << endl;
+	cout << "Опорный план" << endl; print_plan();
 	cout << "Целевая функция SV = " << SV << endl << endl;
+
+#ifdef CHECK_ALG
+	if (SV < 41.65 || SV > 41.67)
+	{
+		assert(!"CHECK_ALG failed!");
+	}
+#endif
 
 	cout << "Число базисных клеток = " << kol_X;
 
