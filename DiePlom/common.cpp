@@ -103,6 +103,30 @@ double Matrix::get(const int i, const int j) const
 
 
 
+PlanMatrix::PlanMatrix(const int k, const int n) : k(k), n(n)
+{
+	resize(k);
+	for (auto it = begin(); it != end(); it++)
+	{
+		it->resize(n);
+	}
+}
+
+
+void PlanMatrix::reset_marks()
+{
+	for (size_t i = 0; i < k; i++)
+	{
+		for (size_t j = 0; j < n; j++)
+		{
+			(*this)[i][j].mark = 0;
+			// (*this)[i][j].is_plan = (*this)[i][j].value != 0.0;
+		}
+	}
+}
+
+
+
 // Метод северо-западного угла
 Table northwest_corner_method(const Matrix& mat, Vector& w, Vector& q)
 {
@@ -145,11 +169,12 @@ Table northwest_corner_method(const Matrix& mat, Vector& w, Vector& q)
 
 	// Заполнение матрицы тарифов
 	ret.matrix_resize(k, n);
-	ret.plan.matrix_resize(k, n);
+	ret.plan = PlanMatrix(k, n);
 	for (size_t i = 0; i < k; i++)
 	{
 		for (size_t j = 0; j < mat[i].size(); j++)
 		{
+			ret.plan[i][j].orig = mat[i][j]; // сохраняем значение Cij
 			ret[i][j] = mat[i][j];
 		}
 	}
@@ -172,7 +197,8 @@ Table northwest_corner_method(const Matrix& mat, Vector& w, Vector& q)
 
 			min_val = std::min(ret.suppliers[i], ret.consumers[j]);
 
-			ret.plan[i][j] = min_val;
+			ret.plan[i][j].value = min_val;
+			ret.plan[i][j].is_plan = true;
 
 			ret.suppliers[i] -= min_val;
 			ret.consumers[j] -= min_val;
@@ -197,7 +223,7 @@ double Table::SV() const
 	{
 		for (int j = 0; j < n(); ++j)
 		{
-			ret += get(i, j) * plan[i][j];
+			ret += get(i, j) * plan[i][j].value;
 		}
 	}
 	return ret;
@@ -218,27 +244,48 @@ void PotentialsMethod::calc_potentials()
 	fill(u.begin(), u.end(), 0.0);
 	fill(v.begin(), v.end(), 0.0);
 
-	// dirty flag
-	bool find_v = true;
+	std::vector<bool> rows(table.k());
+	fill(rows.begin(), rows.end(), false);
+	std::vector<bool> columns(table.n());
+	fill(columns.begin(), columns.end(), false);
 
-	for (int i = 0; i < table.k(); ++i)
+	rows[0] = true;
+
+	while (true)
 	{
-		for (int j = 0; j < table.n(); ++j)
-		{
-			if (table.plan[i][j] == 0.0)
-			{
-				continue;
-			}
+		auto cnt1 = std::count(rows.cbegin(), rows.cend(), false);
+		auto cnt2 = std::count(columns.cbegin(), columns.cend(), false);
 
-			if (find_v)
+		if (!cnt1 && !cnt2)
+		{
+			break;
+		}
+
+		for (int i = 0; i < table.k(); ++i)
+		{
+			for (int j = 0; j < table.n(); ++j)
 			{
-				v[j] = table[i][j] - u[i];
-				find_v = false;
-			}
-			else
-			{
-				u[i] = table[i][j] - v[j];
-				find_v = true;
+				if (!table.plan[i][j].is_plan)
+				{
+					continue;
+				}
+
+				if (!rows[i] && !columns[j])
+				{
+					continue;
+				}
+
+				if (!rows[i])
+				{
+					rows[i] = true;
+					u[i] = table[i][j] - v[j];
+				}
+
+				if (!columns[j])
+				{
+					columns[j] = true;
+					v[j] = table[i][j] - u[i];
+				}
 			}
 		}
 	}
@@ -294,15 +341,56 @@ void PotentialsMethod::optimize()
 			}
 		}
 	}
+	cout << top->i << " " << top->j << endl;
 
+	// строим цикл
 	Cycle cycle = build_cycle(top);
 
-	cout << endl << "Цикл: ";
+	// Очищаем метки
+	table.plan.reset_marks();
+
+	// наименьшее из стоящих в минусовых клетках
+	double mval = 0.0;
+	int mi = -1, mj = -1;
+
+	int next = 1;
 	for (auto& pos : cycle)
 	{
-		cout << pos->i << " " << pos->j << "; ";
+		table.plan[pos->i][pos->j].mark = next;
+
+		if (next == -1)
+		{
+			if (mi == -1 || mval > table.plan[pos->i][pos->j].value)
+			{
+				mi = pos->i;
+				mj = pos->j;
+				mval = table.plan[mi][mj].value;
+			}
+		}
+
+		next *= -1;
 	}
-	cout << endl;
+
+	//cout << table.plan << endl << endl;
+
+	for (int i = 0; i < table.plan.k; ++i)
+	{
+		for (int j = 0; j < table.plan.n; ++j)
+		{
+			if (table.plan[i][j].mark == -1)
+			{
+				table.plan[i][j].value -= mval;
+			}
+			else if (table.plan[i][j].mark == 1)
+			{
+				table.plan[i][j].is_plan = true;
+				table.plan[i][j].value += mval;
+			}
+		}
+	}
+
+	cout << table.plan << endl;
+	table.plan[mi][mj].is_plan = false;
 }
 
 
@@ -316,11 +404,13 @@ PotentialsMethod::Cycle PotentialsMethod::build_cycle(PosPtr top)
 	{
 		for (auto i = 0; i < cycles.size(); ++i)
 		{
-			make_cycle_branches(cycles, cycles[i]);
 			if (check_cycle_final(cycles[i]))
 			{
+				// удаляем последний элемент
+				cycles[i].pop_back();
 				return cycles[i];
 			}
+			make_cycle_branches(cycles, cycles[i]);
 		}
 	}
 }
@@ -367,7 +457,7 @@ void PotentialsMethod::make_cycle_branches(Cycles& cycles, Cycle& cycle)
 			continue;
 		}
 
-		if (table.plan[pos->i][pos->j] == 0.0 && !(*pos == *first))
+		if (!table.plan[pos->i][pos->j].is_plan && !(*pos == *first))
 		{
 			continue;
 		}
@@ -396,7 +486,7 @@ void PotentialsMethod::make_cycle_branches(Cycles& cycles, Cycle& cycle)
 			continue;
 		}
 
-		if (table.plan[pos->i][pos->j] == 0.0)
+		if (!table.plan[pos->i][pos->j].is_plan)
 		{
 			continue;
 		}
@@ -454,5 +544,41 @@ std::ostream& operator<< (std::ostream& os, const Table& val)
 		os << std::setprecision(0) << val.suppliers[i] << std::setprecision(prec) << endl;
 	}
 	os << std::setw(6) << "Q[N]" << val.consumers << endl;
+	return os;
+}
+
+
+// Функция вывода матрицы опорного плана
+std::ostream& operator<< (std::ostream& os, const PlanMatrix& val)
+{
+	auto prec = os.precision();
+
+	for (int i = 0; i < val.k; i++)
+	{
+		for (int j = 0; j < val.n; j++)
+		{
+			if (!val[i][j].is_plan)
+			{
+				os << std::setw(3 + prec) << val[i][j].orig << std::setw(11);
+			}
+			else
+			{
+				os << std::setw(3 + prec) << val[i][j].orig << "[" << std::setw(4) << std::setprecision(0) << val[i][j].value << std::setprecision(prec) << "]" << std::setw(5);
+			}
+			if (val[i][j].mark == 1)
+			{
+				os << "[+]";
+			}
+			else if (val[i][j].mark == -1)
+			{
+				os << "[-]";
+			}
+			else
+			{
+				os << "";
+			}
+		}
+		os << endl;
+	}
 	return os;
 }

@@ -55,12 +55,31 @@ public:
 };
 
 
+struct PlanItem {
+	double orig;
+	double value = 0.0;
+	bool is_plan = false;
+	int mark = 0; // -1, 0, +1
+};
+
+
+class PlanMatrix : public std::vector<std::vector<PlanItem>> {
+public:
+	PlanMatrix(const int k, const int n);
+	PlanMatrix() = default;
+
+	void reset_marks();
+
+	// Размерность матрицы
+	int k = 0, n = 0;
+};
+
 
 class Table : public Matrix {
 public:
 	Vector suppliers; // поставщики
 	Vector consumers; // потребители
-	Matrix plan; // опорный план
+	PlanMatrix plan; // опорный план
 
 	Table() = default;
 
@@ -118,3 +137,6 @@ std::ostream& operator<< (std::ostream& os, const Matrix& val);
 
 // Функция вывода матрицы тарифов + запасы и потребности
 std::ostream& operator<< (std::ostream& os, const Table& val);
+
+// Функция вывода матрицы опорного плана
+std::ostream& operator<< (std::ostream& os, const PlanMatrix& val);
