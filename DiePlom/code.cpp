@@ -159,7 +159,6 @@ int main()
 
 	cout << "Целевая функция SV = " << SV << endl << endl;
 
-
 	// КОНЕЦ МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
 
 
@@ -172,12 +171,20 @@ int main()
 
 	while (!optimizer.is_optimal())
 	{
+		cout << endl;
 		cout << "u[K]: " << optimizer.u << endl;
 		cout << "v[N]: " << optimizer.v << endl;
 		cout << "Опорный план не является оптимальным" << endl;
 		optimizer.optimize();
-		break;
 	}
+
+	cout << " ==================== "<< endl;
+	cout << "u[K]: " << optimizer.u << endl;
+	cout << "v[N]: " << optimizer.v << endl;
+	cout << "Опорный план является оптимальным" << endl;
+
+	SV = optimizer.table.SV();
+	cout << "Целевая функция SV = " << SV << endl << endl;
 
 	// КОНЕЦ МЕТОДА ПОТЕНЦИАЛОВ
 
