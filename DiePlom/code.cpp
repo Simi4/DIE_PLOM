@@ -175,7 +175,6 @@ int main()
 
 
 
-
 	double sumV = V.sum();
 	// важность, не обеспечиваемая при обслуживании всех ГЦ
 	for (int j = 0; j < N; j++)
@@ -187,3 +186,4 @@ int main()
 	std::cin.get();
 	return 0;
 }
+
