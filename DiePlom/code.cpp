@@ -12,7 +12,7 @@ const int N = 3;
 
 
 // для проверки алгоритма
-// #define CHECK_ALG
+#define CHECK_ALG
 
 
 // важность j-ой ГЦ ( 0 <= Vj <= 100 )
@@ -149,15 +149,15 @@ int main()
 	// ПОСТРОЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ СЕВЕРО-ЗАПАДНОГО УГЛА
 	// НАЧАЛО МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
 
-	Table table = Table::northwest_corner(C, W, Q);
+	auto solution = northwest_corner_method(C, W, Q);
 
 	cout << "Опорный план" << endl;
-	cout << table.plan << endl;
+	cout << solution.plan << endl;
 
 	// целевая функция
-	SV = table.SV();
+	SV = solution.SV();
 
-	cout << "Целевая функция SV = " << SV << endl;
+	cout << "Целевая функция SV = " << SV << endl << endl;
 
 
 	// КОНЕЦ МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
@@ -168,7 +168,16 @@ int main()
 	// УЛУЧШЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ ПОТЕНЦИАЛОВ
 	// НАЧАЛО МЕТОДА ПОТЕНЦИАЛОВ
 
-	// To be done (via Table class?)
+	auto optimizer = PotentialsMethod(solution);
+
+	while (!optimizer.is_optimal())
+	{
+		cout << "u[K]: " << optimizer.u << endl;
+		cout << "v[N]: " << optimizer.v << endl;
+		cout << "Опорный план не является оптимальным" << endl;
+		optimizer.optimize();
+		break;
+	}
 
 	// КОНЕЦ МЕТОДА ПОТЕНЦИАЛОВ
 

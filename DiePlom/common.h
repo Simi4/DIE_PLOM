@@ -62,11 +62,50 @@ public:
 	Vector consumers; // потребители
 	Matrix plan; // опорный план
 
-	static Table northwest_corner(const Matrix&, Vector& w, Vector& q);
 	Table() = default;
 
 	// Целевая функция
 	double SV() const;
+};
+
+
+// Метод северо-западного угла
+Table northwest_corner_method(const Matrix&, Vector& w, Vector& q);
+
+
+// Метод потенциалов
+class PotentialsMethod {
+private:
+	// вспомогательный stuff для метода потенциалов
+	struct Pos {
+		int i, j;
+		Pos(int i, int j) : i(i), j(j) {}
+		bool operator== (Pos& other) { return i == other.i && j == other.j; }
+	};
+
+	// Ага, смартпоинтеры
+	typedef std::shared_ptr<Pos> PosPtr;
+	typedef std::vector<PosPtr> Cycle;
+	typedef std::vector<Cycle> Cycles;
+
+public:
+	Matrix differences;
+	Table table;
+	Vector u;
+	Vector v;
+
+	PotentialsMethod() = default;
+	PotentialsMethod(Table table);
+
+	void calc_potentials();
+	void calc_differences();
+	bool is_optimal();
+	void optimize();
+
+	// Нахождение цикла многоугольника
+	Cycle build_cycle(PosPtr top);
+	bool check_cycle_final(const Cycle& cycle) const;
+	void make_cycle_branches(Cycles& cycles, Cycle& cycle);
 };
 
 
