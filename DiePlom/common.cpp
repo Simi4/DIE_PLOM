@@ -1,6 +1,7 @@
 #include "common.h"
 
 
+
 // Конструктор класса Vector
 Vector::Vector(const int size)
 {
@@ -103,7 +104,7 @@ double Matrix::get(const int i, const int j) const
 
 
 // Метод северо-западного угла
-Table Table::northwest_corner(const Matrix& mat, Vector& w, Vector& q)
+Table northwest_corner_method(const Matrix& mat, Vector& w, Vector& q)
 {
 	Table ret;
 
@@ -187,6 +188,7 @@ Table Table::northwest_corner(const Matrix& mat, Vector& w, Vector& q)
 }
 
 
+
 // Целевая функция
 double Table::SV() const
 {
@@ -199,6 +201,216 @@ double Table::SV() const
 		}
 	}
 	return ret;
+}
+
+
+
+// Конструктор: метод потенциалов
+PotentialsMethod::PotentialsMethod(Table table) : differences(table.k(), table.n()),table(table), u(table.k()), v(table.n())
+{
+	//
+}
+
+
+
+void PotentialsMethod::calc_potentials()
+{
+	fill(u.begin(), u.end(), 0.0);
+	fill(v.begin(), v.end(), 0.0);
+
+	// dirty flag
+	bool find_v = true;
+
+	for (int i = 0; i < table.k(); ++i)
+	{
+		for (int j = 0; j < table.n(); ++j)
+		{
+			if (table.plan[i][j] == 0.0)
+			{
+				continue;
+			}
+
+			if (find_v)
+			{
+				v[j] = table[i][j] - u[i];
+				find_v = false;
+			}
+			else
+			{
+				u[i] = table[i][j] - v[j];
+				find_v = true;
+			}
+		}
+	}
+}
+
+void PotentialsMethod::calc_differences()
+{
+	for (int i = 0; i < table.k(); ++i)
+	{
+		for (int j = 0; j < table.n(); ++j)
+		{
+			differences[i][j] = table[i][j] - (u[i] + v[j]);
+		}
+	}
+}
+
+
+
+bool PotentialsMethod::is_optimal()
+{
+	calc_potentials();
+	calc_differences();
+
+	for (int i = 0; i < table.k(); ++i)
+	{
+		for (int j = 0; j < table.n(); ++j)
+		{
+			if (differences[i][j] > 0.0)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+
+void PotentialsMethod::optimize()
+{
+	// Индекс вершины многоугольника (пометим как [+])
+	PosPtr top;
+
+	double abs_max = 0.0;
+	for (int i = 0; i < table.k(); ++i)
+	{
+		for (int j = 0; j < table.n(); ++j)
+		{
+			if (differences[i][j] > abs_max)
+			{
+				abs_max = differences[i][j];
+				top = std::make_shared<Pos>(i, j);
+			}
+		}
+	}
+
+	Cycle cycle = build_cycle(top);
+
+	cout << endl << "Цикл: ";
+	for (auto& pos : cycle)
+	{
+		cout << pos->i << " " << pos->j << "; ";
+	}
+	cout << endl;
+}
+
+
+// Поиск цикла вершин многоугольника
+PotentialsMethod::Cycle PotentialsMethod::build_cycle(PosPtr top)
+{
+	Cycle firstCycle = { top };
+	Cycles cycles = { firstCycle };
+
+	while (true)
+	{
+		for (auto i = 0; i < cycles.size(); ++i)
+		{
+			make_cycle_branches(cycles, cycles[i]);
+			if (check_cycle_final(cycles[i]))
+			{
+				return cycles[i];
+			}
+		}
+	}
+}
+
+bool PotentialsMethod::check_cycle_final(const Cycle& cycle) const
+{
+	// Ну минимум прямоугольник
+	if (cycle.size() < 4)
+	{
+		return false;
+	}
+
+	auto first = cycle.front();
+	auto last = cycle.back();
+
+	// Цикл замкнулся?
+	return *first == *last;
+}
+
+void PotentialsMethod::make_cycle_branches(Cycles& cycles, Cycle& cycle)
+{
+	auto first = cycle.front();
+
+	auto last = cycle.back();
+	auto secondLast = cycle.size() > 1 ? *(cycle.rbegin() + 1) : nullptr;
+
+	Cycle originalCycle;
+	copy(cycle.begin(), cycle.end(), back_inserter(originalCycle));
+
+	bool sameCycle = true;
+
+	// проходим по строке
+	for (auto j = 0; j < table.n(); ++j)
+	{
+		PosPtr pos = std::make_shared<Pos>(last->i, j);
+
+		if (*pos == *last)
+		{
+			continue;
+		}
+
+		if (secondLast && secondLast->i == pos->i && j > last->j - secondLast->j)
+		{
+			continue;
+		}
+
+		if (table.plan[pos->i][pos->j] == 0.0 && !(*pos == *first))
+		{
+			continue;
+		}
+
+		if (sameCycle)
+		{
+			cycle.push_back(pos);
+			sameCycle = false;
+		}
+		else
+		{
+			Cycle newBranch;
+			copy(originalCycle.begin(), originalCycle.end(), back_inserter(newBranch));
+			newBranch.push_back(pos);
+			cycles.push_back(newBranch);
+		}
+	}
+
+	// проходим по столбцу
+	for (auto i = 0; i < table.k(); ++i)
+	{
+		PosPtr pos = std::make_shared<Pos>(i, last->j);
+
+		if (*pos == *last)
+		{
+			continue;
+		}
+
+		if (table.plan[pos->i][pos->j] == 0.0)
+		{
+			continue;
+		}
+
+		if (secondLast && secondLast->j == pos->j && pos->i > last->j - secondLast->i)
+		{
+			continue;
+		}
+
+		Cycle newBranch;
+		copy(originalCycle.begin(), originalCycle.end(), back_inserter(newBranch));
+		newBranch.push_back(pos);
+		cycles.push_back(newBranch);
+	}
 }
 
 
