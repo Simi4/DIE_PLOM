@@ -13,18 +13,39 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="TransportationProblem">
+      <UniqueIdentifier>{1e5cdeaf-4c64-412f-ba35-594ecab66c0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="code.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="common.cpp">
-      <Filter>Файлы исходного кода</Filter>
+    <ClCompile Include="transportation_problem\matrix_impl.cpp">
+      <Filter>TransportationProblem</Filter>
+    </ClCompile>
+    <ClCompile Include="transportation_problem\northwest_corner_method.cpp">
+      <Filter>TransportationProblem</Filter>
+    </ClCompile>
+    <ClCompile Include="transportation_problem\potentials_method.cpp">
+      <Filter>TransportationProblem</Filter>
+    </ClCompile>
+    <ClCompile Include="transportation_problem\vector_impl.cpp">
+      <Filter>TransportationProblem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h">
-      <Filter>Заголовочные файлы</Filter>
+    <ClInclude Include="transportation_problem\matrix_impl.h">
+      <Filter>TransportationProblem</Filter>
+    </ClInclude>
+    <ClInclude Include="transportation_problem\northwest_corner_method.h">
+      <Filter>TransportationProblem</Filter>
+    </ClInclude>
+    <ClInclude Include="transportation_problem\potentials_method.h">
+      <Filter>TransportationProblem</Filter>
+    </ClInclude>
+    <ClInclude Include="transportation_problem\vector_impl.h">
+      <Filter>TransportationProblem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -66,10 +66,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="code.cpp" />
-    <ClCompile Include="common.cpp" />
+    <ClCompile Include="transportation_problem\matrix_impl.cpp" />
+    <ClCompile Include="transportation_problem\northwest_corner_method.cpp" />
+    <ClCompile Include="transportation_problem\potentials_method.cpp" />
+    <ClCompile Include="transportation_problem\vector_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h" />
+    <ClInclude Include="transportation_problem\matrix_impl.h" />
+    <ClInclude Include="transportation_problem\northwest_corner_method.h" />
+    <ClInclude Include="transportation_problem\potentials_method.h" />
+    <ClInclude Include="transportation_problem\vector_impl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
