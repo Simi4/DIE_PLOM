@@ -12,7 +12,9 @@ namespace transportation_problem
 		Vector v;
 
 		void calc_differences();
-		void calc_potentials();
+		bool calc_potentials();
+
+		void recalc_x_zero();
 
 		Point top;
 		std::vector<Point> cycle;
