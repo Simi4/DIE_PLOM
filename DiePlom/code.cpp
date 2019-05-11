@@ -1,161 +1,164 @@
+// Если компилируем под Win32
 #ifdef _WIN32
-#include <windows.h>
+#  include <windows.h>
 #endif
-#include "common.h"
+
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include "transportation_problem/potentials_method.h"
+
+using namespace transportation_problem;
+using namespace std;
 
 
-// кол-во многоканальных РЛС ( i = 1, ..., K )
-const int K = 3;
 
-// кол-во ГЦ ( j = 1, ..., N )
-const int N = 3;
-
-
-// для проверки алгоритма
-#define CHECK_ALG
-
-
-// важность j-ой ГЦ ( 0 <= Vj <= 100 )
-Vector V(N);
-
-
-// потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ ( 0 <= Qj <= 1000 )
-Vector Q(N);
-
-
-// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ ( 0 <= Wi <= 5000 )
-Vector W(K);
-
-
-// потенциал i-ой РЛС, выделяемый на j-ую ГЦ ( 0 <= wij <= 1000 )
-Matrix w(K, N);
-
-
-// радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
-Vector q(N);
-
-
-// обеспечиваемая при обслуживании j-ой ГЦ важность
-Vector v(N);
-
-
-// важность, обеспечиваемая при обслуживании всех ГЦ
-double SV;
-
-
-// вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ ( 0 <= pij <= 1 )
-Matrix p(K, N);
-
-
-// важность, не обеспечиваемая при обслуживании всех ГЦ
-double sV;
-
-
-// коэффициент для ЦФ ( Сij = Vj / Qj * pij )
-Matrix C(K, N);
+template <typename T>
+void file_input(ifstream& file, T& x)
+{
+	string s; file >> s; file >> x;
+	if (!file.good())
+	{
+		cout << "Файл имеет некорректную структуру!" << endl; cin.get();
+		exit(EXIT_FAILURE);
+	}
+}
 
 
 
 int main()
 {
-	// Генератор случайных чисел
-	default_random_engine gen((unsigned)time(nullptr));
-	srand((unsigned)time(nullptr));
-
 #ifdef _WIN32
 	// Кодировка консоли
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
 #endif
 
-	cout << std::fixed << std::left << std::setprecision(3);
+	cout << fixed << left << setprecision(3);
+
+	// кол-во многоканальных РЛС ( i = 1, ..., K )
+	size_t K;
+
+	// кол-во ГЦ ( j = 1, ..., N )
+	size_t N;
+
+	// открываем файл для чтения
+	ifstream file("../input.txt");
+
+	if (!file.is_open())
+	{
+		cout << "Невозможно открыть файл!" << endl; cin.get();
+		return EXIT_FAILURE;
+	}
+
+	file >> K >> N;
+
+	if (!file.good())
+	{
+		cout << "Файл имеет некорректную структуру!" << endl; cin.get();
+		return EXIT_FAILURE;
+	}
+
 
 	cout << "Количество ГЦ  (N): " << N << endl;
 	cout << "Количество РЛС (K): " << K << endl << endl;
 
-	// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ ( 0 <= Wi <= 5000 )
-#ifdef CHECK_ALG
-	W[0] = 10.0;
-	W[1] = 20.0;
-	W[2] = 30.0;
-#else
-	W.fill_random(gen, 0, 5000);
-#endif
+
+	// важность j-ой ГЦ ( 0 <= Vj <= 100 )
+	Vector V(N);
+	file_input(file, V);
 
 
 	// потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ ( 0 <= Qj <= 1000 )
-#ifdef CHECK_ALG
-	Q[0] = 15.0;
-	Q[1] = 20.0;
-	Q[2] = 25.0;
-#else
-	Q.fill_random(gen, 0, 1000);
-#endif
+	Vector Q(N);
+	file_input(file, Q);
 
 
-	// важность j-ой ГЦ ( 0 <= Vj <= 100 )
-	V.fill_random(gen, 0, 100);
-	// cout << "V[N]: " << V << endl;
+	// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ ( 0 <= Wi <= 5000 )
+	Vector W(K);
+	file_input(file, W);
 
 
-	// вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ ( 0 <= pij <= 1 )
-	p.fill_random(gen, 0.0, 1.0);
-	// cout << "p[K][N]:" << endl << p << endl;
-
-
-
-#ifdef CHECK_ALG
-	C[0][0] = 5.0; C[0][1] = 3.0; C[0][2] = 1.0;
-	C[1][0] = 3.0; C[1][1] = 2.0; C[1][2] = 4.0;
-	C[2][0] = 4.0; C[2][1] = 1.0; C[2][2] = 2.0;
-#else
-	// коэффициент для ЦФ ( Сij = Vj/Qj*pij )
-	for (int i = 0; i < K; i++)
-	{
-		for (int j = 0; j < N; j++)
-		{
-			C[i][j] = (V[j] / Q[j]) * p[i][j];
-		}
-	}
-#endif
-
+	// потенциал i-ой РЛС, выделяемый на j-ую ГЦ ( 0 <= wij <= 1000 )
+	Matrix w(K, N);
+	file_input(file, w);
 
 
 	// радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
-	//for (int i = 0; i < K; i++)
-	//{
-	//	for (int j = 0; j < N; j++)
-	//	{
-	//		q[j] += w[i][j];
-	//	}
-	//}
-	//cout << "q[N]: " << q << endl;
+	Vector q(N);
 
-
-	// потенциал i-ой РЛС, выделяемый на j-ую ГЦ (0<=wij<=1000)
-	w.fill_random(gen, 0, 1000);
-	// cout << "w[K][N]:" << endl << w;
+	for (size_t i = 0; i < K; ++i)
+	{
+		for (size_t j = 0; j < N; ++j)
+		{
+			q[j] += w[i][j];
+		}
+	}
 
 
 	// обеспечиваемая при обслуживании j-ой ГЦ важность
-	for (int j = 0; j < N; j++)
+	Vector v(N);
+
+	for (size_t j = 0; j < N; ++j)
 	{
 		v[j] = V[j] * (q[j] / Q[j]);
 	}
 
 
+	// важность, обеспечиваемая при обслуживании всех ГЦ
+	double SV;
 
+
+	// вероятность обеспечения обслуживания i-ой РЛС j-ой ГЦ ( 0 <= pij <= 1 )
+	Matrix p(K, N);
+	file_input(file, p);
+
+
+	// Закроем файл - больше не нужен
+	file.close();
+
+
+	// важность, не обеспечиваемая при обслуживании всех ГЦ
+	double sV;
+
+
+	// коэффициент для ЦФ ( Сij = Vj / Qj * pij )
+	Matrix C(K, N);
+
+	for (size_t i = 0; i < K; ++i)
+	{
+		for (size_t j = 0; j < N; ++j)
+		{
+			C[i][j] = (V[j] / Q[j]) * p[i][j];
+		}
+	}
+
+
+	cout << "C:" << endl << C;
+	cout << "W: " << W << endl;
+	cout << "Q: " << Q << endl << endl;
 
 	// ПОСТРОЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ СЕВЕРО-ЗАПАДНОГО УГЛА
 	// НАЧАЛО МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
 
-	auto solution = northwest_corner_method(C, W, Q);
+	TableNCM solution;
+
+	try
+	{
+		solution = TableNCM(C, W, Q);
+	}
+	catch (const exception e)
+	{
+		cout << "Ошибка: " << e.what(); cin.get();
+		return EXIT_FAILURE;
+	}
 
 	cout << "Опорный план" << endl;
 	cout << solution.plan << endl;
 
 	// целевая функция
-	SV = solution.SV();
+	SV = solution.f();
 
 	cout << "Целевая функция SV = " << SV << endl << endl;
 
@@ -171,35 +174,28 @@ int main()
 
 	while (!optimizer.is_optimal())
 	{
-		cout << endl;
-		cout << "u[K]: " << optimizer.u << endl;
-		cout << "v[N]: " << optimizer.v << endl;
-		cout << "Опорный план не является оптимальным" << endl;
 		optimizer.optimize();
 	}
 
-	cout << " ==================== "<< endl;
-	cout << "u[K]: " << optimizer.u << endl;
-	cout << "v[N]: " << optimizer.v << endl;
-	cout << "Опорный план является оптимальным" << endl;
+	cout << "Оптимальный план" << endl;
+	cout << optimizer.table.plan << endl;
 
-	SV = optimizer.table.SV();
+	SV = optimizer.table.f();
 	cout << "Целевая функция SV = " << SV << endl << endl;
 
 	// КОНЕЦ МЕТОДА ПОТЕНЦИАЛОВ
 
 
 
-
 	double sumV = V.sum();
 	// важность, не обеспечиваемая при обслуживании всех ГЦ
-	for (int j = 0; j < N; j++)
+	for (size_t j = 0; j < N; j++)
 	{
 		sV = sumV - SV;
 	}
 
 
-	std::cin.get();
+	cin.get();
 	return 0;
 }
 
