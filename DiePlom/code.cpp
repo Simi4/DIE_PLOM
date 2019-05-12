@@ -48,60 +48,9 @@ int main()
 	}
 
 
-<<<<<<< HEAD
-
-	cout << "Количество РЛС (K): " << K << endl;
-	cout << "Количество ГЦ  (N): " << N << endl << endl;
-
-
-	// важность j-ой ГЦ ( 0 <= Vj <= 100 )
-	Vector V(N);
-	file_input(file, V);
-
-
-	// потребный радиолокационный потенциал, необходимый для обслуживания всех целей в ГЦ ( 0 <= Qj <= 1000 )
-	Vector Q(N);
-	file_input(file, Q);
-
-
-	// располагаемый радиолокационный потенциал РЛС, необходимый для сопровождения и поиск всех целей в ГЦ ( 0 <= Wi <= 5000 )
-	Vector W(K);
-	file_input(file, W);
-
-
-	// потенциал i-ой РЛС, выделяемый на j-ую ГЦ ( 0 <= wij <= 1000 )
-	Matrix w(K, N);
-	file_input(file, w);
-
-
-	// радиолокационный потенциал, выделенный всеми РЛС на j-ую ГЦ
-	Vector q(N);
-
-	for (size_t i = 0; i < K; ++i)
-	{
-		for (size_t j = 0; j < N; ++j)
-		{
-			q[j] += w[i][j];
-		}
-	}
-
-
-	// обеспечиваемая при обслуживании j-ой ГЦ важность
-	Vector v(N);
-
-	for (size_t j = 0; j < N; ++j)
-	{
-		v[j] = V[j] * (q[j] / Q[j]);
-	}
-
-
-	// важность, обеспечиваемая при обслуживании всех ГЦ
-	double SV;
-=======
 	size_t K, N;
 	file_input(file, K);
 	file_input(file, N);
->>>>>>> 730be3c3ecb083bd9653f607ac33f4bf4ca8c58f
 
 	Solver solver(K, N);
 
@@ -116,38 +65,9 @@ int main()
 	// Закроем файл - больше не нужен
 	file.close();
 
-<<<<<<< HEAD
 
-	// важность, не обеспечиваемая при обслуживании всех ГЦ
-	double sV;
-
-
-	// коэффициент для ЦФ ( Сij = Vj / Qj * pij )
-	Matrix C(K, N);
-
-	for (size_t i = 0; i < K; ++i)
-	{
-		for (size_t j = 0; j < N; ++j)
-		{
-			C[i][j] = (V[j] / Q[j]) * p[i][j];
-		}
-	}
-
-
-	cout << "C:" << endl << C << endl;
-	cout << "W: " << W << endl;
-	cout << "Q: " << Q << endl << endl;
-
-	// ПОСТРОЕНИЕ ОПОРНОГО ПЛАНА МЕТОДОМ СЕВЕРО-ЗАПАДНОГО УГЛА
-	// НАЧАЛО МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
-
-	TableNCM solution;
-
-	try
-=======
 	// Вычисление
 	if (!solver.solve())
->>>>>>> 730be3c3ecb083bd9653f607ac33f4bf4ca8c58f
 	{
 		cin.get();
 		return EXIT_FAILURE;
@@ -156,4 +76,3 @@ int main()
 	cin.get();
 	return 0;
 }
-
