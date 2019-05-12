@@ -33,6 +33,9 @@
     <ClCompile Include="transportation_problem\vector_impl.cpp">
       <Filter>TransportationProblem</Filter>
     </ClCompile>
+    <ClCompile Include="solver.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="transportation_problem\matrix_impl.h">
@@ -46,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="transportation_problem\vector_impl.h">
       <Filter>TransportationProblem</Filter>
+    </ClInclude>
+    <ClInclude Include="solver.h">
+      <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
