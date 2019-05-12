@@ -61,8 +61,9 @@ int main()
 	}
 
 
-	cout << "Количество ГЦ  (N): " << N << endl;
-	cout << "Количество РЛС (K): " << K << endl << endl;
+
+	cout << "Количество РЛС (K): " << K << endl;
+	cout << "Количество ГЦ  (N): " << N << endl << endl;
 
 
 	// важность j-ой ГЦ ( 0 <= Vj <= 100 )
@@ -135,7 +136,7 @@ int main()
 	}
 
 
-	cout << "C:" << endl << C;
+	cout << "C:" << endl << C << endl;
 	cout << "W: " << W << endl;
 	cout << "Q: " << Q << endl << endl;
 
