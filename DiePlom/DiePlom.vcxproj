@@ -66,12 +66,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="code.cpp" />
+    <ClCompile Include="solver.cpp" />
     <ClCompile Include="transportation_problem\matrix_impl.cpp" />
     <ClCompile Include="transportation_problem\northwest_corner_method.cpp" />
     <ClCompile Include="transportation_problem\potentials_method.cpp" />
     <ClCompile Include="transportation_problem\vector_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="solver.h" />
     <ClInclude Include="transportation_problem\matrix_impl.h" />
     <ClInclude Include="transportation_problem\northwest_corner_method.h" />
     <ClInclude Include="transportation_problem\potentials_method.h" />

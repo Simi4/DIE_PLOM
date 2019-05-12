@@ -12,8 +12,6 @@ namespace transportation_problem
 
 	class TableNCM : public Matrix {
 	public:
-		Vector suppliers;
-		Vector consumers;
 		PlanMatrix plan;
 
 		TableNCM(const Matrix&, const Vector&, const Vector&);
