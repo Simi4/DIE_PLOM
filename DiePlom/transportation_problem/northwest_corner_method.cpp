@@ -20,9 +20,10 @@ PlanMatrix::PlanMatrix(const size_t k, const size_t n) : Matrix(k, n)
 
 TableNCM::TableNCM(const Matrix& traffic, const Vector& _suppliers, const Vector& _consumers)
 	: Matrix(traffic)
-	, suppliers(_suppliers)
-	, consumers(_consumers)
 {
+	Vector suppliers = _suppliers;
+	Vector consumers = _consumers;
+
 	auto suppliers_sum = suppliers.sum();
 	auto consumers_sum = consumers.sum();
 
