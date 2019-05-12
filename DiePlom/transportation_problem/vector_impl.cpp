@@ -30,7 +30,14 @@ std::ostream& operator<< (std::ostream& os, const Vector& val)
 {
 	for (const auto& it : val)
 	{
-		os << std::setw(8 + os.precision()) << it;
+		if (std::isnan(it))
+		{
+			os << std::setw(8 + os.precision()) << "-";
+		}
+		else
+		{
+			os << std::setw(8 + os.precision()) << it;
+		}
 	}
 	return os;
 }
