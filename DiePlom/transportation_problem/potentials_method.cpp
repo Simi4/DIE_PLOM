@@ -25,7 +25,7 @@ void PotentialsMethod::calc_differences()
 
 
 
-void PotentialsMethod::calc_potentials()
+bool PotentialsMethod::calc_potentials()
 {
 	fill(u.begin(), u.end(), std::numeric_limits<double>::quiet_NaN());
 	fill(v.begin(), v.end(), std::numeric_limits<double>::quiet_NaN());
@@ -34,14 +34,7 @@ void PotentialsMethod::calc_potentials()
 
 	while (true)
 	{
-		auto nan_u = std::any_of(u.cbegin(), u.cend(), std::isnan<double>);
-		auto nan_v = std::any_of(v.cbegin(), v.cend(), std::isnan<double>);
-
-		if (!nan_u && !nan_v)
-		{
-			break;
-		}
-
+		bool flag = false;
 		for (size_t i = 0; i < table.k(); ++i)
 		{
 			for (size_t j = 0; j < table.n(); ++j)
@@ -59,21 +52,87 @@ void PotentialsMethod::calc_potentials()
 				if (std::isnan(u[i]))
 				{
 					u[i] = table[i][j] - v[j];
+					flag = true;
 				}
 				else if (std::isnan(v[j]))
 				{
 					v[j] = table[i][j] - u[i];
+					flag = true;
 				}
 			}
 		}
+		if (!flag)
+		{
+			break;
+		}
 	}
+
+	auto nan_u = std::any_of(u.cbegin(), u.cend(), std::isnan<double>);
+	auto nan_v = std::any_of(v.cbegin(), v.cend(), std::isnan<double>);
+
+	return !nan_u && !nan_v;
 }
 
 
 
+void PotentialsMethod::recalc_x_zero()
+{
+	Point minp;
+	double minv = std::numeric_limits<double>::max();
+
+	for (size_t i = 0; i < table.k(); ++i)
+	{
+		if (std::isnan(u[i]))
+		{
+			for (size_t j = 0; j < table.n(); ++j)
+			{
+				if (!std::isnan(v[j]))
+				{
+					if (minv >= table[i][j])
+					{
+						minv = table[i][j];
+						minp = Point{ i, j };
+					}
+				}
+			}
+		}
+	}
+
+	for (size_t j = 0; j < table.n(); ++j)
+	{
+		if (std::isnan(v[j]))
+		{
+			for (size_t i = 0; i < table.k(); ++i)
+			{
+				if (!std::isnan(u[i]))
+				{
+					if (minv >= table[i][j])
+					{
+						minv = table[i][j];
+						minp = Point{ i, j };
+					}
+				}
+			}
+		}
+	}
+
+	// нулевую поставку размещаем в клетку minp, и она становится условно занятой
+	table.plan[minp.first][minp.second] = 0.0;
+}
+
+
 bool PotentialsMethod::is_optimal()
 {
-	calc_potentials();
+	// Проверим оптимальность опорного плана
+	if (!calc_potentials())
+	{
+		// На данном этапе возникла ситуация, когда для оставшихся занятых клеток не известно ни одного из потенциалов.
+		// Это результат вырожденности решения.
+		// Для его преодоления в одну из клеток нужно внести нулевую поставку, таким образом, такая клетка станет условно занятой. 
+		recalc_x_zero();
+		calc_potentials();
+	}
+
 	calc_differences();
 
 	for (size_t i = 0; i < table.k(); ++i)
@@ -95,6 +154,7 @@ void PotentialsMethod::optimize()
 {
 	top = { 0, 0 };
 	double abs_max = differences[0][0];
+
 	for (size_t i = 0; i < table.k(); ++i)
 	{
 		for (size_t j = 0; j < table.n(); ++j)
