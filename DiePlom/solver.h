@@ -42,8 +42,9 @@ public:
 	// важность, не обеспечиваемая при обслуживании всех ГЦ
 	double sV;
 
-	// Solver() = default;
+	// Конструктор
 	Solver(const size_t K, const size_t N);
 
+	// Метод решения
 	bool solve();
 };
