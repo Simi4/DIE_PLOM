@@ -1,4 +1,4 @@
-// Если компилируем под Win32
+﻿// Если компилируем под Win32
 #ifdef _WIN32
 #  include <windows.h>
 #endif
@@ -19,7 +19,7 @@ void file_input(ifstream& file, T& x)
 	string s; file >> s; file >> x;
 	if (!file.good())
 	{
-		cerr << "Error: File incorrect!" << endl; cin.get();
+		cerr << "Ошибка: некорректная структура файла! Проверьте, пожалуйста, данные в файле." << endl; cin.get();
 		exit(EXIT_FAILURE);
 	}
 }
@@ -30,9 +30,9 @@ int main()
 {
 #ifdef _WIN32
 	// Кодировка консоли
-	// В Visual Studio 2013 не работает
-	SetConsoleCP(CP_UTF8);
-	SetConsoleOutputCP(CP_UTF8);
+	// В Visual Studio 2013 работает
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
 #endif
 
 	cout << fixed << left << setprecision(3);
@@ -43,7 +43,7 @@ int main()
 	ifstream file("../input.txt");
 	if (!file.is_open())
 	{
-		cerr << "Error: Cannot open file!" << endl; cin.get();
+		cerr << "Ошибка: невозможно открыть файл! Проверьте наличие файла и его соответствие формату .txt" << endl; cin.get();
 		return EXIT_FAILURE;
 	}
 

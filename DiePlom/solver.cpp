@@ -15,11 +15,11 @@ Solver::Solver(const size_t K, const size_t N)
 	, v(N)
 	, p(K, N)
 	, C(K, N)
-	, SV(numeric_limits<double>::quiet_NaN())
+	, F(numeric_limits<double>::quiet_NaN())
 	, sV(numeric_limits<double>::quiet_NaN())
 {
-	cout << "Number of GC  (N): " << N << endl;
-	cout << "Number of RLS (K): " << K << endl << endl;
+	cout << "Количество РЛС (K): " << K << endl ;
+	cout << "Количество ГЦ  (N): " << N << endl << endl;
 }
 
 
@@ -31,8 +31,8 @@ bool Solver::solve()
 	{
 		if (Q[j] <= numeric_limits<double>::epsilon() || Q[j] > 1000.0)
 		{
-			cerr << "Error: Q[" << j << "] = " << Q[j] << endl;
-			cerr << "Must be: ( 0 < Qj <= 1000 )" << endl;
+			cerr << "Ошибка: Q[" << j << "] = " << Q[j] << endl;
+			cerr << "Должно выполняться условие: ( 0 < Qj <= 1000 )" << endl;
 			return false;
 		}
 	}
@@ -42,8 +42,8 @@ bool Solver::solve()
 	{
 		if (W[i] < 0.0 || W[i] > 5000.0)
 		{
-			cerr << "Error: W[" << i << "] = " << W[i] << endl;
-			cerr << "Must be: ( 0 <= Wi <= 5000 )" << endl;
+			cerr << "Ошибка: W[" << i << "] = " << W[i] << endl;
+			cerr << "Должно выполняться условие: ( 0 <= Wi <= 5000 )" << endl;
 			return false;
 		}
 	}
@@ -55,8 +55,8 @@ bool Solver::solve()
 		{
 			if (w[i][j] < 0.0 || w[i][j] > 1000.0)
 			{
-				cerr << "Error: w[" << i << "][" << j << "] = " << w[i][j] << endl;
-				cerr << "Must be: ( 0 <= wij <= 1000 )" << endl;
+				cerr << "Ошибка: w[" << i << "][" << j << "] = " << w[i][j] << endl;
+				cerr << "Должно выполняться условие: ( 0 <= wij <= 1000 )" << endl;
 				return false;
 			}
 		}
@@ -89,7 +89,7 @@ bool Solver::solve()
 
 
 
-	cout << "C:" << endl << C;
+	cout << "C:" << endl << C << endl;
 	cout << "W: " << W << endl;
 	cout << "Q: " << Q << endl << endl;
 
@@ -106,17 +106,17 @@ bool Solver::solve()
 	}
 	catch (const exception e)
 	{
-		cerr << "Error: " << e.what();
+		cerr << "Ошибка: " << e.what();
 		return false;
 	}
 
-	cout << "Basic plan" << endl;
+	cout << "Опорный план" << endl;
 	cout << solution.plan << endl;
 
 	// целевая функция
-	SV = solution.f();
+	F = solution.f();
 
-	cout << "Cost of the basic plan (SV) = " << SV << endl << endl;
+	cout << "ЦФ опорного плана F = " << F << endl << endl;
 
 	// КОНЕЦ МЕТОДА СЕВЕРО-ЗАПАДНОГО УГЛА
 
@@ -133,11 +133,11 @@ bool Solver::solve()
 		optimizer.optimize();
 	}
 
-	cout << "Optimal plan" << endl;
+	cout << "Оптимальный план" << endl;
 	cout << optimizer.table.plan << endl;
 
-	SV = optimizer.table.f();
-	cout << "Cost of the optimal plan (SV) = " << SV << endl << endl;
+	F = optimizer.table.f();
+	cout << "ЦФ оптимального плана F* = " << F << endl << endl;
 
 	// КОНЕЦ МЕТОДА ПОТЕНЦИАЛОВ
 
@@ -147,7 +147,7 @@ bool Solver::solve()
 	// важность, не обеспечиваемая при обслуживании всех ГЦ
 	for (size_t j = 0; j < N; j++)
 	{
-		sV = sumV - SV;
+		sV = sumV - F;
 	}
 
 	return true;
