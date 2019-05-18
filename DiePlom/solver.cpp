@@ -62,6 +62,66 @@ bool Solver::solve()
 		}
 	}
 
+	// Выполняем проверку на выполнения условия: сумма элементов каждой строки матрицы w
+	// не должна превышать соответствующего значения W
+	for (size_t i = 0; i < K; ++i)
+	{
+		for (size_t j = 0; j < N; ++j)
+		{
+			summ_w += w[i][j];
+		}
+		cout <<" summ: " << summ_w << "\n";
+
+		if (summ_w > W[i])
+		{
+			cerr << "Ошибка! Должно выполняться условие: sum wij<= Wi ("<< W[i] <<")"<< endl;
+			return false;
+		}
+		else
+		{
+			summ_w = 0;
+		}
+	}
+
+	//Выполняем проверку на p (0<p<1)
+	for (size_t i = 0; i < K; ++i)
+	{
+		for (size_t j = 0; j < N; ++j)
+		{
+			if (p[i][j] < 0.0 || p[i][j] > 1.0)
+			{
+				cerr << "Ошибка: p[" << i << "][" << j << "] = " << p[i][j] << endl;
+				cerr << "Должно выполняться условие: ( 0 <= p <= 1 )" << endl;
+				return false;
+			}
+		}
+	}
+
+	//Выполняем проверку на sum p*w<=Q
+	for (size_t j = 0; j < N; ++j)
+	{
+		summ_w = 0;
+		for (size_t i = 0; i < K; ++i)
+		{
+			summ_pw += p[i][j]*w[i][j];
+			cout << " summ: " << summ_pw << "\n";
+		}
+
+		if (summ_pw > Q[j])
+		{
+			cerr << "Q[j] = " << Q[j] << endl;
+			cerr << "Ошибка! Должно выполняться условие: sum pij*wij<=Qj " << endl;
+			return false;
+		}
+		
+	}
+
+	//for j = 0 ... {
+	//	тут сброс значения sum
+	//		for i = 0 ... {
+	//			sum += wij * pij
+	//		}
+	//	тут проверка sum < Qj
 
 	// Вычисление qj
 	for (size_t i = 0; i < K; ++i)

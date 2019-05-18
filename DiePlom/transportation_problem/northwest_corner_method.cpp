@@ -38,7 +38,7 @@ TableNCM::TableNCM(const Matrix& traffic, const Vector& _suppliers, const Vector
 	}
 	else if (suppliers_sum < consumers_sum)
 	{
-		throw std::runtime_error("Check the balance!");
+		throw std::runtime_error("Проверьте баланс! Суммарный Q[N] должен быть меньше суммарного W[K]!");
 	}
 
 	plan = PlanMatrix(k(), n());
