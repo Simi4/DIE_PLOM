@@ -26,6 +26,17 @@ Solver::Solver(const size_t K, const size_t N)
 
 bool Solver::solve()
 {
+	// Выполняем проверку на принадлежность диапозону ( 0 < Vj <= 100 )
+	for (size_t j = 0; j < N; ++j)
+	{
+		if (V[j] <= numeric_limits<double>::epsilon() || V[j] > 100.0)
+		{
+			cerr << "Ошибка: V[" << j << "] = " << V[j] << endl;
+			cerr << "Должно выполняться условие: ( 0 < Vj <= 100 )" << endl;
+			return false;
+		}
+	}
+
 	// Выполняем проверку на принадлежность диапозону ( 0 < Qj <= 1000 )
 	for (size_t j = 0; j < N; ++j)
 	{
@@ -66,20 +77,18 @@ bool Solver::solve()
 	// не должна превышать соответствующего значения W
 	for (size_t i = 0; i < K; ++i)
 	{
+		//сумма строки матрицы w
+		double summ_w = 0.0;
 		for (size_t j = 0; j < N; ++j)
 		{
 			summ_w += w[i][j];
 		}
-		cout <<" summ: " << summ_w << "\n";
+		//cout <<" summ: " << summ_w << "\n";
 
 		if (summ_w > W[i])
 		{
 			cerr << "Ошибка! Должно выполняться условие: sum wij<= Wi ("<< W[i] <<")"<< endl;
 			return false;
-		}
-		else
-		{
-			summ_w = 0;
 		}
 	}
 
@@ -100,17 +109,19 @@ bool Solver::solve()
 	//Выполняем проверку на sum p*w<=Q
 	for (size_t j = 0; j < N; ++j)
 	{
-		summ_w = 0;
+		//сумма строки матриц w и p
+		double summ_pw = 0.0;
 		for (size_t i = 0; i < K; ++i)
 		{
 			summ_pw += p[i][j]*w[i][j];
-			cout << " summ: " << summ_pw << "\n";
+			/*cout << i << " : " << summ_pw << "\t";*/
+			
 		}
+
 
 		if (summ_pw > Q[j])
 		{
-			cerr << "Q[j] = " << Q[j] << endl;
-			cerr << "Ошибка! Должно выполняться условие: sum pij*wij<=Qj " << endl;
+			cerr << "Ошибка! Должно выполняться условие: sum pij*wij<=Qj (" << Q[j] << ")" << endl;
 			return false;
 		}
 		

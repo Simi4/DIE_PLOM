@@ -42,12 +42,6 @@ public:
 	// важность, не обеспечиваемая при обслуживании всех ГЦ
 	double sV;
 
-	//сумма строки матрицы w
-	double summ_w;
-
-	//сумма строки матриц w и p
-	double summ_pw;
-
 	// Конструктор
 	Solver(const size_t K, const size_t N);
 
