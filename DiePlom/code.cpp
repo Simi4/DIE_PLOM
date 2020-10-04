@@ -1,4 +1,5 @@
-﻿// Если компилируем под Win32
+﻿#include "httplib.h"
+// Если компилируем под Win32
 #ifdef _WIN32
 #  include <windows.h>
 #endif
@@ -28,6 +29,14 @@ void file_input(ifstream& file, T& x)
 
 int main()
 {
+	httplib::Server svr;
+
+	svr.Get("/hi", [](const httplib::Request&, httplib::Response& res) {
+		res.set_content("Kill me", "text/plain");
+	});
+	svr.listen("localhost", 8080);
+	return 0;
+
 #ifdef _WIN32
 	// Кодировка консоли
 	// В Visual Studio 2013 работает
