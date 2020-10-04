@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+
+<h2>Добро пожаловать в программу вычисления распределения радиолокационных ресурсов</h2>
+
+<button onclick="document.getElementById('signUp').style.display='block'" style="width:auto;">Зарегестрироваться</button>
+<button onclick="document.getElementById('signIn').style.display='block'" style="width:auto;">Войти</button>
+<button onclick="document.getElementById('adminSignIn').style.display='block'" style="width:auto;">Вход администратора</button>
+
+<h3>Данная программа позволяет оптимально распределить ресурсы РЛС в режиме поиска и сопровождения целей.</h3>
+<h3>Сначала высчитывается опорный план методом северо-западного угла, затем данный план оптимизируется с помощью метода потенциалов.</h3>
+
+<div id="signUp" class="modal">
+
+    <form class="modal-content animate" method="post" id="formSignUp">
+        <div class="imgcontainer">
+            <span onclick="document.getElementById('signUp').style.display='none'" class="close" title="Close Modal">&times;</span>
+            <img src="images/1.jpg" alt="RLS" class="avatar">
+        </div>
+
+        <div class="container">
+            <label for="uname1"><b>Логин</b></label>
+            <input type="text" placeholder="Enter Username" name="uname" id="uname1" required>
+
+            <label for="psw1"><b>Пароль</b></label>
+            <input type="password" placeholder="Enter Password" name="psw" id="psw1" required>
+
+            <label for="psw-repeat1"><b>Повторите пароль</b></label>
+            <input type="password" placeholder="Repeat Password" name="psw-repeat" id="psw-repeat1" required>
+
+            <button type="button" id="submit1" class="submitbtn">Зарегестрироваться</button>
+            <label>
+                <input type="checkbox" checked="checked" name="remember"> Запомнить меня
+            </label>
+        </div>
+    </form>
+</div>
+
+<div id="signIn" class="modal">
+
+    <form class="modal-content animate" method="post" id="formSignIn">
+        <div class="imgcontainer">
+            <span onclick="document.getElementById('signIn').style.display='none'" class="close" title="Close Modal">&times;</span>
+            <img src="images/2.jpg" alt="RLS" class="avatar">
+        </div>
+
+        <div class="container">
+            <label for="uname2"><b>Логин</b></label>
+            <input type="text" placeholder="Enter Username" name="uname" id="uname2" required>
+
+            <label for="psw2"><b>Пароль</b></label>
+            <input type="password" placeholder="Enter Password" name="psw" id="psw2" required>
+
+            <button type="button" id="submit2">Войти</button>
+            <label>
+                <input type="checkbox" checked="checked" name="remember"> Запомнить меня
+            </label>
+        </div>
+    </form>
+</div>
+
+<div id="adminSignIn" class="modal">
+
+    <form class="modal-content animate" method="post" id="adminFormSignIn">
+        <div class="imgcontainer">
+            <span onclick="document.getElementById('adminSignIn').style.display='none'" class="close" title="Close Modal">&times;</span>
+            <img src="images/3.jpg" alt="RLS" class="avatar">
+        </div>
+
+        <div class="container">
+            <label for="uname3"><b>Логин администратора</b></label>
+            <input type="text" placeholder="Enter Username" name="uname" id="uname3" required>
+
+            <label for="psw3"><b>Пароль</b></label>
+            <input type="password" placeholder="Enter Password" name="psw" id="psw3" required>
+
+            <button type="button" id="submit3">Войти</button>
+            <label>
+                <input type="checkbox" checked="checked" name="remember"> Запомнить меня
+            </label>
+        </div>
+    </form>
+</div>
+
+<script src="action1.js"></script>
+
+</body>
+</html>
+

@@ -29,11 +29,12 @@ void file_input(ifstream& file, T& x)
 
 int main()
 {
+	//запускать localhost:8080
 	httplib::Server svr;
-
-	svr.Get("/hi", [](const httplib::Request&, httplib::Response& res) {
-		res.set_content("Kill me", "text/plain");
-	});
+	svr.set_mount_point("/", "./site");
+	//svr.Get("/hi", [](const httplib::Request&, httplib::Response& res) {
+	//	res.set_content("Kill me", "text/plain");
+	//});
 	svr.listen("localhost", 8080);
 	return 0;
 
